@@ -1,1 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GharKhoj - Room & PG Finder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #e2e8f0; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center items-center p-0 sm:p-4">
+
+  <!-- Mobile App Container -->
+  <div class="w-full max-w-[430px] h-[100dvh] sm:h-[850px] bg-slate-50 sm:rounded-[36px] sm:shadow-2xl sm:border-[6px] sm:border-slate-900 overflow-hidden flex flex-col relative">
+
+    <!-- ================= 1. AUTH SCREEN (SIGN UP / LOGIN) ================= -->
+    <div id="authScreen" class="flex-1 flex flex-col justify-between p-6 bg-gradient-to-b from-indigo-600 via-indigo-700 to-slate-900 text-white overflow-y-auto no-scrollbar">
+      <div class="mt-4">
+        <div class="w-12 h-12 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 border border-white/20">
+          <i data-lucide="home" class="w-6 h-6 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-tight">GharKhoj</h1>
+        <p class="text-indigo-200 text-xs mt-1">Verified Rooms & PGs for Students</p>
+      </div>
+
+      <div class="bg-white text-slate-800 rounded-3xl p-5 shadow-xl my-4">
+        <!-- Login / Register Switch -->
+        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl mb-4">
+          <button type="button" id="tabLogin" onclick="setAuthMode('login')" class="py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm">Login</button>
+          <button type="button" id="tabRegister" onclick="setAuthMode('register')" class="py-2 rounded-lg text-xs font-bold text-slate-500">New Account</button>
+        </div>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+          <!-- Extra fields for New Registration -->
+          <div id="registerFields" class="hidden space-y-3">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase">Select Role</label>
+              <div class="grid grid-cols-2 gap-2 mt-1">
+                <button type="button" id="roleStudentBtn" onclick="selectRole('student')" class="py-2 px-2 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1">
+                  <i data-lucide="graduation-cap" class="w-4 h-4"></i> Student
+                </button>
+                <button type="button" id="roleOwnerBtn" onclick="selectRole('owner')" class="py-2 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1">
+                  <i data-lucide="key-round" class="w-4 h-4"></i> Room Owner
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase">Full Name</label>
+              <input type="text" id="regName" placeholder="e.g. Rahul Sharma" class="w-full mt-1 px-3.5 py-2.5 bg-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase">Phone</label>
+                <input type="tel" id="regPhone" placeholder="9876543210" class="w-full mt-1 px-3 py-2.5 bg-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase">Area</label>
+                <select id="regArea" class="w-full mt-1 px-2.5 py-2.5 bg-slate-100 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="Mansarovar">Mansarovar</option>
+                  <option value="Malviya Nagar">Malviya Nagar</option>
+                  <option value="Jagatpura">Jagatpura</option>
+                  <option value="Vaishali Nagar">Vaishali Nagar</option>
+                  <option value="Raja Park">Raja Park</option>
+                  <option value="Pratap Nagar">Pratap Nagar</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Email Address</label>
+            <input type="email" id="authEmail" required placeholder="you@example.com" class="w-full mt-1 px-3.5 py-2.5 bg-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Password</label>
+            <input type="password" id="authPassword" required minlength="6" placeholder="Min 6 characters" class="w-full mt-1 px-3.5 py-2.5 bg-slate-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <p id="authError" class="text-xs text-rose-600 font-semibold hidden"></p>
+
+          <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-200 transition">
+            Login to Account
+          </button>
+        </form>
+      </div>
+
+      <p class="text-[11px] text-center text-indigo-200">Your login & listings are saved securely on Cloud.</p>
+    </div>
+
+    <!-- ================= 2. MAIN APP SHELL ================= -->
+    <div id="appShell" class="hidden flex-1 flex flex-col overflow-hidden">
+      <!-- Top Header -->
+      <header class="bg-white px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span id="roleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-700">Student</span>
+            <span id="headerArea" class="text-xs font-semibold text-slate-500 flex items-center gap-0.5">
+              <i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> Mansarovar
+            </span>
+          </div>
+          <h2 id="headerGreeting" class="text-base font-extrabold text-slate-900 mt-0.5">Hi, User</h2>
+        </div>
+        <button onclick="logoutUser()" class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 text-xs font-bold flex items-center gap-1 hover:bg-rose-100">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
+        </button>
+      </header>
+
+      <!-- ================= STUDENT VIEWS ================= -->
+      <div id="studentContainer" class="hidden flex-1 flex flex-col overflow-hidden">
+        <!-- Tab 1: Explore Rooms -->
+        <div id="studentExploreView" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="searchInput" oninput="renderStudentRooms()" placeholder="Search area, PG, or room..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+            <button onclick="setGenderFilter('All')" class="filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white shrink-0" data-filter="All">All</button>
+            <button onclick="setGenderFilter('Boys')" class="filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0" data-filter="Boys">Boys</button>
+            <button onclick="setGenderFilter('Girls')" class="filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0" data-filter="Girls">Girls</button>
+            <button onclick="setGenderFilter('Both')" class="filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0" data-filter="Both">Boys & Girls</button>
+          </div>
+
+          <div id="studentRoomsList" class="space-y-3 pb-4"></div>
+        </div>
+
+        <!-- Tab 2: Post Room Requirement -->
+        <div id="studentReqView" class="hidden flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-sm font-extrabold text-slate-900 mb-1">Post Your Room Requirement</h3>
+            <p class="text-xs text-slate-500 mb-3">Owners in your selected area will see this & contact you directly.</p>
+            <form onsubmit="submitRequirement(event)" class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-500">Preferred Area</label>
+                  <select id="reqArea" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold">
+                    <option value="Mansarovar">Mansarovar</option>
+                    <option value="Malviya Nagar">Malviya Nagar</option>
+                    <option value="Jagatpura">Jagatpura</option>
+                    <option value="Vaishali Nagar">Vaishali Nagar</option>
+                    <option value="Raja Park">Raja Park</option>
+                    <option value="Pratap Nagar">Pratap Nagar</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-500">Max Budget (₹/mo)</label>
+                  <input type="number" id="reqBudget" required placeholder="e.g. 6000" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-500">Room Type</label>
+                  <select id="reqType" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold">
+                    <option value="Single Room">Single Room</option>
+                    <option value="Shared PG">Shared PG</option>
+                    <option value="1RK / Flat">1RK / Flat</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-slate-500">Gender</label>
+                  <select id="reqGender" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold">
+                    <option value="Boys">Boy</option>
+                    <option value="Girls">Girl</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500">Additional Note</label>
+                <input type="text" id="reqNote" placeholder="e.g. Need WiFi, near coaching/college" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-medium" />
+              </div>
+              <button type="submit" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-md">Post Requirement Live</button>
+            </form>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-extrabold text-slate-700 uppercase mb-2">My Posted Requirements</h4>
+            <div id="myRequirementsList" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- Student Bottom Nav -->
+        <nav class="bg-white border-t border-slate-200 px-6 py-2.5 flex justify-around shrink-0">
+          <button onclick="switchStudentTab('explore')" id="navStuExplore" class="flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5">
+            <i data-lucide="search" class="w-5 h-5"></i> Find Rooms
+          </button>
+          <button onclick="switchStudentTab('req')" id="navStuReq" class="flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5">
+            <i data-lucide="file-plus-2" class="w-5 h-5"></i> Post Requirement
+          </button>
+        </nav>
+      </div>
+
+      <!-- ================= OWNER VIEWS ================= -->
+      <div id="ownerContainer" class="hidden flex-1 flex flex-col overflow-hidden">
+        <!-- Tab 1: My Rooms -->
+        <div id="ownerRoomsView" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold text-slate-900">My Listed Rooms</h3>
+            <button onclick="openRoomFormModal()" class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-md">
+              <i data-lucide="plus" class="w-4 h-4"></i> Add Room
+            </button>
+          </div>
+          <div id="ownerRoomsList" class="space-y-3 pb-4"></div>
+        </div>
+
+        <!-- Tab 2: Student Leads in Area -->
+        <div id="ownerLeadsView" class="hidden flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold text-slate-900">Student Requirements</h3>
+            <select id="leadAreaFilter" onchange="renderOwnerLeads()" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-indigo-600">
+              <option value="All">All Areas</option>
+              <option value="Mansarovar">Mansarovar</option>
+              <option value="Malviya Nagar">Malviya Nagar</option>
+              <option value="Jagatpura">Jagatpura</option>
+              <option value="Vaishali Nagar">Vaishali Nagar</option>
+              <option value="Raja Park">Raja Park</option>
+              <option value="Pratap Nagar">Pratap Nagar</option>
+            </select>
+          </div>
+          <div id="ownerLeadsList" class="space-y-3 pb-4"></div>
+        </div>
+
+        <!-- Owner Bottom Nav -->
+        <nav class="bg-white border-t border-slate-200 px-6 py-2.5 flex justify-around shrink-0">
+          <button onclick="switchOwnerTab('rooms')" id="navOwnRooms" class="flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5">
+            <i data-lucide="building-2" class="w-5 h-5"></i> My Rooms
+          </button>
+          <button onclick="switchOwnerTab('leads')" id="navOwnLeads" class="flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5">
+            <i data-lucide="users" class="w-5 h-5"></i> Student Leads
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: ADD / EDIT ROOM ================= -->
+    <div id="roomFormModal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end">
+      <div class="bg-white w-full rounded-t-3xl p-5 max-h-[90%] overflow-y-auto no-scrollbar">
+        <div class="flex justify-between items-center mb-3">
+          <h3 id="roomModalTitle" class="text-base font-extrabold text-slate-900">Add New Room</h3>
+          <button onclick="closeRoomFormModal()" class="p-1.5 bg-slate-100 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <form onsubmit="saveRoom(event)" class="space-y-3">
+          <input type="hidden" id="editRoomId" />
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">Room / PG Title</label>
+            <input type="text" id="rTitle" required placeholder="e.g. Spacious Single Room near Metro" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500">Area</label>
+              <select id="rArea" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold">
+                <option value="Mansarovar">Mansarovar</option>
+                <option value="Malviya Nagar">Malviya Nagar</option>
+                <option value="Jagatpura">Jagatpura</option>
+                <option value="Vaishali Nagar">Vaishali Nagar</option>
+                <option value="Raja Park">Raja Park</option>
+                <option value="Pratap Nagar">Pratap Nagar</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500">Monthly Rent (₹)</label>
+              <input type="number" id="rRent" required placeholder="5500" class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-semibold" />
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500">Type</label>
+              <select id="rType" class="w-full mt-1 p-2 bg-slate-100 rounded-xl text-xs font-semibold">
+                <option value="Single Room">Single</option>
+                <option value="Shared PG">Shared PG</option>
+                <option value="1RK / Flat">1RK / Flat</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500">Allowed</label>
+              <select id="rGender" class="w-full mt-1 p-2 bg-slate-100 rounded-xl text-xs font-semibold">
+                <option value="Boys">Boys Only</option>
+                <option value="Girls">Girls Only</option>
+                <option value="Both">Boys & Girls</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500">Max Persons</label>
+              <select id="rOccupancy" class="w-full mt-1 p-2 bg-slate-100 rounded-xl text-xs font-semibold">
+                <option value="1">1 Person</option>
+                <option value="2">2 Persons</option>
+                <option value="3">3 Persons</option>
+                <option value="4">4 Persons</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">Google Maps Link</label>
+            <div class="flex gap-1.5 mt-1">
+              <input type="url" id="rMapLink" placeholder="https://maps.google.com/..." class="flex-1 p-2.5 bg-slate-100 rounded-xl text-xs font-medium" />
+              <button type="button" onclick="captureGPS()" class="px-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-[11px] font-bold shrink-0">Use GPS</button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500">Room Description & Facilities</label>
+            <textarea id="rDesc" rows="2" required placeholder="WiFi, RO water, attached bathroom, no gate timing..." class="w-full mt-1 p-2.5 bg-slate-100 rounded-xl text-xs font-medium"></textarea>
+          </div>
+          <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-xs shadow-lg">Save Room Listing</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: ROOM DETAIL (STUDENT) ================= -->
+    <div id="roomDetailModal" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end">
+      <div id="roomDetailContent" class="bg-white w-full rounded-t-3xl p-5 max-h-[85%] overflow-y-auto no-scrollbar"></div>
+    </div>
+
+  </div>
+
+  <!-- ================= FIREBASE SDK & APP LOGIC ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // TODO: YAHAN APNA FIREBASE CONFIG PASTE KAREIN
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let authMode = 'login';
+    let selectedRole = 'student';
+    let currentUserProfile = null;
+    let allRooms = [];
+    let allRequirements = [];
+    let activeGenderFilter = 'All';
+
+    // Auth UI Switch
+    window.setAuthMode = (mode) => {
+      authMode = mode;
+      document.getElementById('registerFields').classList.toggle('hidden', mode === 'login');
+      document.getElementById('authSubmitBtn').innerText = mode === 'login' ? 'Login to Account' : 'Create Account';
+      document.getElementById('tabLogin').className = mode === 'login' ? 'py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm' : 'py-2 rounded-lg text-xs font-bold text-slate-500';
+      document.getElementById('tabRegister').className = mode === 'register' ? 'py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm' : 'py-2 rounded-lg text-xs font-bold text-slate-500';
+      document.getElementById('authError').classList.add('hidden');
+    };
+
+    window.selectRole = (role) => {
+      selectedRole = role;
+      document.getElementById('roleStudentBtn').className = role === 'student'
+        ? 'py-2 px-2 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1'
+        : 'py-2 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1';
+      document.getElementById('roleOwnerBtn').className = role === 'owner'
+        ? 'py-2 px-2 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1'
+        : 'py-2 px-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1';
+    };
+
+    // Handle Login / Register
+    window.handleAuthSubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.classList.add('hidden');
+
+      try {
+        if (authMode === 'register') {
+          const name = document.getElementById('regName').value.trim();
+          const phone = document.getElementById('regPhone').value.trim();
+          const area = document.getElementById('regArea').value;
+          if (!name || !phone) throw new Error("Please enter your Name and Phone number.");
+
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, "users", cred.user.uid), {
+            uid: cred.user.uid, name, phone, area, role: selectedRole, email
+          });
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        errEl.innerText = err.message.replace("Firebase: ", "");
+        errEl.classList.remove('hidden');
+      }
+    };
+
+    window.logoutUser = () => signOut(auth);
+
+    // Persistent Session Listener
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          currentUserProfile = snap.data();
+          initAppForUser();
+        }
+      } else {
+        currentUserProfile = null;
+        document.getElementById('authScreen').classList.remove('hidden');
+        document.getElementById('appShell').classList.add('hidden');
+      }
+      lucide.createIcons();
+    });
+
+    function initAppForUser() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
+      document.getElementById('headerGreeting').innerText = `Hi, ${currentUserProfile.name}`;
+      document.getElementById('headerArea').innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-indigo-500"></i> ${currentUserProfile.area}`;
+      document.getElementById('roleBadge').innerText = currentUserProfile.role === 'owner' ? 'House Owner' : 'Student';
+
+      if (currentUserProfile.role === 'student') {
+        document.getElementById('studentContainer').classList.remove('hidden');
+        document.getElementById('ownerContainer').classList.add('hidden');
+        document.getElementById('reqArea').value = currentUserProfile.area;
+      } else {
+        document.getElementById('ownerContainer').classList.remove('hidden');
+        document.getElementById('studentContainer').classList.add('hidden');
+        document.getElementById('leadAreaFilter').value = currentUserProfile.area;
+      }
+      subscribeToCloudData();
+      lucide.createIcons();
+    }
+
+    // Real-Time Cloud Sync
+    function subscribeToCloudData() {
+      onSnapshot(query(collection(db, "rooms"), orderBy("createdAt", "desc")), (snapshot) => {
+        allRooms = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderStudentRooms();
+        renderOwnerRooms();
+      });
+
+      onSnapshot(query(collection(db, "requirements"), orderBy("createdAt", "desc")), (snapshot) => {
+        allRequirements = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderMyRequirements();
+        renderOwnerLeads();
+      });
+    }
+
+    // Student Functions
+    window.switchStudentTab = (tab) => {
+      document.getElementById('studentExploreView').classList.toggle('hidden', tab !== 'explore');
+      document.getElementById('studentReqView').classList.toggle('hidden', tab !== 'req');
+      document.getElementById('navStuExplore').className = tab === 'explore' ? 'flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5' : 'flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5';
+      document.getElementById('navStuReq').className = tab === 'req' ? 'flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5' : 'flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5';
+    };
+
+    window.setGenderFilter = (g) => {
+      activeGenderFilter = g;
+      document.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.className = btn.dataset.filter === g
+          ? 'filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white shrink-0'
+          : 'filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0';
+      });
+      renderStudentRooms();
+    };
+
+    window.renderStudentRooms = () => {
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const list = document.getElementById('studentRoomsList');
+      const filtered = allRooms.filter(r => {
+        if (!r.available) return false;
+        const matchQuery = r.title.toLowerCase().includes(q) || r.area.toLowerCase().includes(q);
+        const matchGender = activeGenderFilter === 'All' || r.gender === activeGenderFilter || r.gender === 'Both';
+        return matchQuery && matchGender;
+      });
+
+      list.innerHTML = filtered.length ? filtered.map(r => `
+        <div onclick="openRoomDetail('${r.id}')" class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs cursor-pointer hover:border-indigo-300 transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700">${r.gender === 'Both' ? 'Boys & Girls' : r.gender}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 ml-1">Max ${r.occupancy} Person</span>
+              <h4 class="text-sm font-extrabold text-slate-900 mt-1.5">${r.title}</h4>
+              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><i data-lucide="map-pin" class="w-3 h-3 text-rose-500"></i> ${r.area} • ${r.type}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-base font-extrabold text-indigo-600">₹${r.rent}</p>
+              <p class="text-[10px] text-slate-400">/month</p>
+            </div>
+          </div>
+        </div>
+      `).join('') : `<p class="text-center text-xs text-slate-400 py-8">No rooms found matching your filter.</p>`;
+      lucide.createIcons();
+    };
+
+    window.openRoomDetail = (id) => {
+      const r = allRooms.find(item => item.id === id);
+      if (!r) return;
+      const mapUrl = r.mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.area + ' Jaipur')}`;
+      document.getElementById('roomDetailContent').innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-100 text-emerald-700">Available Now</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-1.5">${r.title}</h3>
+            <p class="text-xs text-slate-500 font-medium">${r.area} • ${r.type} • Max ${r.occupancy} Person</p>
+          </div>
+          <button onclick="document.getElementById('roomDetailModal').classList.add('hidden')" class="p-1.5 bg-slate-100 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl mb-3">
+          <p class="text-[11px] font-bold text-slate-400 uppercase">Description & Facilities</p>
+          <p class="text-xs text-slate-700 mt-1 leading-relaxed">${r.desc}</p>
+        </div>
+        <div class="flex items-center justify-between bg-indigo-50 p-3 rounded-xl mb-4">
+          <div>
+            <p class="text-[10px] font-bold text-indigo-500 uppercase">Owner</p>
+            <p class="text-xs font-extrabold text-slate-900">${r.ownerName}</p>
+          </div>
+          <p class="text-lg font-extrabold text-indigo-700">₹${r.rent}<span class="text-xs font-normal">/mo</span></p>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <a href="tel:${r.ownerPhone}" class="py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i data-lucide="phone" class="w-3.5 h-3.5"></i> Call</a>
+          <a href="https://wa.me/91${r.ownerPhone}" target="_blank" class="py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp</a>
+          <a href="${mapUrl}" target="_blank" class="py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i data-lucide="navigation" class="w-3.5 h-3.5"></i> Map</a>
+        </div>
+      `;
+      document.getElementById('roomDetailModal').classList.remove('hidden');
+      lucide.createIcons();
+    };
+
+    window.submitRequirement = async (e) => {
+      e.preventDefault();
+      await addDoc(collection(db, "requirements"), {
+        studentUid: currentUserProfile.uid,
+        studentName: currentUserProfile.name,
+        studentPhone: currentUserProfile.phone,
+        area: document.getElementById('reqArea').value,
+        budget: Number(document.getElementById('reqBudget').value),
+        type: document.getElementById('reqType').value,
+        gender: document.getElementById('reqGender').value,
+        note: document.getElementById('reqNote').value,
+        createdAt: Date.now()
+      });
+      e.target.reset();
+      alert("Requirement posted! Owners in this area can now contact you.");
+    };
+
+    function renderMyRequirements() {
+      if (!currentUserProfile) return;
+      const mine = allRequirements.filter(req => req.studentUid === currentUserProfile.uid);
+      document.getElementById('myRequirementsList').innerHTML = mine.length ? mine.map(req => `
+        <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs">
+          <div class="flex justify-between font-bold text-slate-900">
+            <span>${req.area} • ${req.type}</span>
+            <span class="text-indigo-600">Budget: ₹${req.budget}</span>
+          </div>
+          <p class="text-slate-500 mt-1">${req.note || 'No extra note'}</p>
+        </div>
+      `).join('') : `<p class="text-xs text-slate-400">You haven't posted any requirement yet.</p>`;
+    }
+
+    // Owner Functions
+    window.switchOwnerTab = (tab) => {
+      document.getElementById('ownerRoomsView').classList.toggle('hidden', tab !== 'rooms');
+      document.getElementById('ownerLeadsView').classList.toggle('hidden', tab !== 'leads');
+      document.getElementById('navOwnRooms').className = tab === 'rooms' ? 'flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5' : 'flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5';
+      document.getElementById('navOwnLeads').className = tab === 'leads' ? 'flex flex-col items-center text-indigo-600 font-bold text-[11px] gap-0.5' : 'flex flex-col items-center text-slate-400 font-bold text-[11px] gap-0.5';
+    };
+
+    window.openRoomFormModal = (roomId = null) => {
+      document.getElementById('editRoomId').value = roomId || '';
+      document.getElementById('roomModalTitle').innerText = roomId ? 'Edit Room Details' : 'Add New Room';
+      if (roomId) {
+        const r = allRooms.find(item => item.id === roomId);
+        document.getElementById('rTitle').value = r.title;
+        document.getElementById('rArea').value = r.area;
+        document.getElementById('rRent').value = r.rent;
+        document.getElementById('rType').value = r.type;
+        document.getElementById('rGender').value = r.gender;
+        document.getElementById('rOccupancy').value = r.occupancy;
+        document.getElementById('rMapLink').value = r.mapLink || '';
+        document.getElementById('rDesc').value = r.desc;
+      } else {
+        document.getElementById('rTitle').value = '';
+        document.getElementById('rArea').value = currentUserProfile.area;
+        document.getElementById('rRent').value = '';
+        document.getElementById('rMapLink').value = '';
+        document.getElementById('rDesc').value = '';
+      }
+      document.getElementById('roomFormModal').classList.remove('hidden');
+    };
+
+    window.closeRoomFormModal = () => document.getElementById('roomFormModal').classList.add('hidden');
+
+    window.captureGPS = () => {
+      if (!navigator.geolocation) return alert("GPS not supported");
+      navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById('rMapLink').value = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+      }, () => alert("Unable to fetch location. Please allow GPS permission."));
+    };
+
+    window.saveRoom = async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editRoomId').value;
+      const roomData = {
+        ownerUid: currentUserProfile.uid,
+        ownerName: currentUserProfile.name,
+        ownerPhone: currentUserProfile.phone,
+        title: document.getElementById('rTitle').value,
+        area: document.getElementById('rArea').value,
+        rent: Number(document.getElementById('rRent').value),
+        type: document.getElementById('rType').value,
+        gender: document.getElementById('rGender').value,
+        occupancy: Number(document.getElementById('rOccupancy').value),
+        mapLink: document.getElementById('rMapLink').value,
+        desc: document.getElementById('rDesc').value,
+        available: true
+      };
+
+      if (editId) {
+        await updateDoc(doc(db, "rooms", editId), roomData);
+      } else {
+        roomData.createdAt = Date.now();
+        await addDoc(collection(db, "rooms"), roomData);
+      }
+      closeRoomFormModal();
+    };
+
+    window.toggleAvailability = async (id, currentStatus) => {
+      await updateDoc(doc(db, "rooms", id), { available: !currentStatus });
+    };
+
+    function renderOwnerRooms() {
+      if (!currentUserProfile) return;
+      const mine = allRooms.filter(r => r.ownerUid === currentUserProfile.uid);
+      document.getElementById('ownerRoomsList').innerHTML = mine.length ? mine.map(r => `
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2.5">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="text-sm font-extrabold text-slate-900">${r.title}</h4>
+              <p class="text-xs text-slate-500">${r.area} • ₹${r.rent}/mo • Max ${r.occupancy}</p>
+            </div>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${r.available ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+              ${r.available ? 'Available' : 'Booked'}
+            </span>
+          </div>
+          <div class="flex gap-2 pt-1 border-t border-slate-100">
+            <button onclick="openRoomFormModal('${r.id}')" class="flex-1 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold">Edit Details</button>
+            <button onclick="toggleAvailability('${r.id}', ${r.available})" class="flex-1 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">
+              Mark ${r.available ? 'Booked' : 'Available'}
+            </button>
+          </div>
+        </div>
+      `).join('') : `<p class="text-center text-xs text-slate-400 py-8">No rooms added yet. Tap "+ Add Room" to list one.</p>`;
+    }
+
+    window.renderOwnerLeads = () => {
+      const filterArea = document.getElementById('leadAreaFilter').value;
+      const filtered = allRequirements.filter(req => filterArea === 'All' || req.area === filterArea);
+      document.getElementById('ownerLeadsList').innerHTML = filtered.length ? filtered.map(req => `
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">${req.gender} • ${req.type}</span>
+              <h4 class="text-sm font-extrabold text-slate-900 mt-1">${req.studentName}</h4>
+              <p class="text-xs text-slate-500">Looking in <b>${req.area}</b></p>
+            </div>
+            <span class="text-sm font-extrabold text-emerald-600">₹${req.budget}</span>
+          </div>
+          ${req.note ? `<p class="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg">"${req.note}"</p>` : ''}
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <a href="tel:${req.studentPhone}" class="py-2 bg-slate-900 text-white rounded-xl text-xs font-bold text-center">Call Student</a>
+            <a href="https://wa.me/91${req.studentPhone}?text=${encodeURIComponent('Hi ' + req.studentName + ', I have a room available in ' + req.area + ' on GharKhoj.')}" target="_blank" class="py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold text-center">WhatsApp</a>
+          </div>
+        </div>
+      `).join('') : `<p class="text-center text-xs text-slate-400 py-8">No student requirements in this area yet.</p>`;
+    };
+  </script>
+</body>
+</html>
 
